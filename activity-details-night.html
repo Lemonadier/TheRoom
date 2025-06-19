@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดกิจกรรม - โรงเรียนอนุบาลสดใส (Night Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap">
+    <style> body { font-family: 'Kanit', sans-serif; } </style>
+</head>
+<body class="bg-slate-900">
+
+    <nav class="bg-slate-900/80 backdrop-blur-sm shadow-md sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="./index-night.html" class="text-teal-400 text-xl">ห้องเรียนครูสไปร์ท</a>
+                </div>
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <a href="./index-night.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">หน้าหลัก</a>
+                    <a href="./activity-list-night.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">ตารางกิจกรรม</a>
+                    <a href="./students-night.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">รายชื่อนักเรียน</a>
+                    <a id="theme-toggle-link" href="#" title="โหมดกลางวัน" class="text-gray-400 hover:bg-gray-700 rounded-lg p-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="activity-details-container" class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-gray-400">กำลังโหลดข้อมูลกิจกรรม...</p>
+    </main>
+
+    <footer class="mt-12">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">&copy; 2025 นางสาว ดุจดาว มาลาแสง. สงวนลิขสิทธิ์.</p>
+        </div>
+    </footer>
+    
+    <script>
+        async function loadActivityDetails() {
+            const container = document.getElementById('activity-details-container');
+            const toggleLink = document.getElementById('theme-toggle-link');
+            try {
+                const response = await fetch('./activities.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const activities = await response.json();
+                const params = new URLSearchParams(window.location.search);
+                const activityId = parseInt(params.get('id'), 10);
+                const activity = activities.find(a => a.id === activityId);
+                if (activity) {
+                    document.title = `${activity.name} - โรงเรียนอนุบาลสดใส`;
+                    toggleLink.href = `./activity-details.html?id=${activityId}`;
+                    const whatToBringList = activity.what_to_bring.map(item => `<li class="text-gray-300">${item}</li>`).join('');
+                    container.innerHTML = `
+                        <div class="bg-slate-800/70 backdrop-blur-sm rounded-lg shadow-xl overflow-hidden">
+                            <img class="w-full h-64 md:h-80 object-cover" src="${activity.image_url}" alt="รูปภาพกิจกรรม ${activity.name}">
+                            <div class="p-8 md:p-10">
+                                <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">${activity.name}</h1>
+                                <p class="text-gray-300 mb-6 leading-relaxed">${activity.description_long}</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                    <div class="bg-slate-700/50 p-4 rounded-lg"><h3 class="font-semibold text-teal-400 mb-2">ตารางกิจกรรม</h3><p class="text-gray-300">${activity.schedule.days}</p><p class="text-gray-300">เวลา ${activity.schedule.time}</p></div>
+                                    <div class="bg-slate-700/50 p-4 rounded-lg"><h3 class="font-semibold text-orange-400 mb-2">สิ่งที่ต้องเตรียม</h3><ul class="list-disc list-inside">${whatToBringList}</ul></div>
+                                </div>
+                                <div><h3 class="font-semibold text-white mb-2">ผู้ดูแลกิจกรรม</h3><p class="text-gray-300">${activity.supervisor}</p></div>
+                            </div>
+                        </div>`;
+                } else {
+                    throw new Error('Activity not found');
+                }
+            } catch (error) {
+                console.error("Could not load activity details:", error);
+                document.title = 'ไม่พบกิจกรรม - โรงเรียนอนุบาลสดใส';
+                container.innerHTML = `<div class="text-center p-10 bg-slate-800/70 backdrop-blur-sm rounded-lg shadow-md"><h1 class="text-2xl font-bold text-red-500">ไม่พบข้อมูลกิจกรรม</h1><p class="text-gray-300 mt-4">กรุณากลับไปที่ <a href="./activity-list-night.html" class="text-teal-400 hover:underline">หน้าตารางกิจกรรม</a> และลองอีกครั้ง</p></div>`;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadActivityDetails);
+    </script>
+</body>
+</html>
