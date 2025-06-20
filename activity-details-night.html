@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ข้อมูลนักเรียน - ห้องเรียนครูสไปร์ท (Night Mode)</title>
+    <title>รายละเอียดกิจกรรม - ห้องเรียนครูสไปร์ท (Night Mode)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap">
     <style> body { font-family: 'Kanit', sans-serif; } </style>
@@ -43,8 +43,8 @@
         </div>
     </nav>
 
-    <main id="profile-container" class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-         <p class="text-center text-gray-400">กำลังโหลดข้อมูล...</p>
+    <main id="activity-details-container" class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-gray-400">กำลังโหลดข้อมูลกิจกรรม...</p>
     </main>
 
     <footer class="mt-12">
@@ -52,7 +52,7 @@
             <p class="text-center text-sm text-gray-500">&copy; 2025 นางสาว ดุจดาว มาลาแสง. สงวนลิขสิทธิ์.</p>
         </div>
     </footer>
-
+    
     <script>
         // Mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -60,50 +60,46 @@
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
-        
-        async function loadStudentProfile() {
-            const profileContainer = document.getElementById('profile-container');
+
+        async function loadActivityDetails() {
+            const container = document.getElementById('activity-details-container');
             const toggleLink = document.getElementById('theme-toggle-link');
             const mobileToggleLink = document.getElementById('mobile-theme-toggle-link');
             try {
-                const response = await fetch('./students.json');
+                const response = await fetch('./activities.json');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const studentsData = await response.json();
+                const activities = await response.json();
                 const params = new URLSearchParams(window.location.search);
-                const studentId = parseInt(params.get('id'), 10);
-                const student = studentsData.find(s => s.id === studentId);
-                if (student) {
-                    document.title = `${student.prefix} ${student.firstname} - ห้องเรียนครูสไปร์ท`;
-                    toggleLink.href = `./student-profile.html?id=${studentId}`;
-                    mobileToggleLink.href = `./student-profile.html?id=${studentId}`;
-                    profileContainer.innerHTML = `
-                        <header class="text-center mb-10"><h1 class="text-3xl sm:text-4xl font-bold text-white">ข้อมูลนักเรียน</h1></header>
-                        <div class="bg-slate-800/70 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden md:flex">
-                            <div class="md:flex-shrink-0">
-                                <img class="h-48 w-full object-cover md:h-full md:w-48" src="${student.image_url}" alt="รูปของ ${student.firstname}">
-                            </div>
-                            <div class="p-8">
-                                <div class="uppercase tracking-wide text-sm text-teal-400 font-semibold">${student.class_level}</div>
-                                <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">${student.prefix} ${student.firstname} ${student.lastname}</h2>
-                                <div class="mt-4 space-y-3">
-                                    <p class="text-gray-300"><span class="font-semibold">ชื่อเล่น:</span> ${student.nickname}</p>
-                                    <p class="text-gray-300"><span class="font-semibold">อายุ:</span> ${student.age} ขวบ</p>
+                const activityId = parseInt(params.get('id'), 10);
+                const activity = activities.find(a => a.id === activityId);
+                if (activity) {
+                    document.title = `${activity.name} - ห้องเรียนครูสไปร์ท`;
+                    toggleLink.href = `./activity-details.html?id=${activityId}`;
+                    mobileToggleLink.href = `./activity-details.html?id=${activityId}`;
+                    const whatToBringList = activity.what_to_bring.map(item => `<li class="text-gray-300">${item}</li>`).join('');
+                    container.innerHTML = `
+                        <div class="bg-slate-800/70 backdrop-blur-sm rounded-lg shadow-xl overflow-hidden">
+                            <img class="w-full h-64 md:h-80 object-cover" src="${activity.image_url}" alt="รูปภาพกิจกรรม ${activity.name}">
+                            <div class="p-6 sm:p-8 md:p-10">
+                                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">${activity.name}</h1>
+                                <p class="text-gray-300 mb-6 leading-relaxed">${activity.description_long}</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                    <div class="bg-slate-700/50 p-4 rounded-lg"><h3 class="font-semibold text-teal-400 mb-2">ตารางกิจกรรม</h3><p class="text-gray-300">${activity.schedule.days}</p><p class="text-gray-300">เวลา ${activity.schedule.time}</p></div>
+                                    <div class="bg-slate-700/50 p-4 rounded-lg"><h3 class="font-semibold text-orange-400 mb-2">สิ่งที่ต้องเตรียม</h3><ul class="list-disc list-inside ml-4">${whatToBringList}</ul></div>
                                 </div>
-                                <hr class="my-6 border-gray-700">
-                                <h3 class="text-lg font-semibold text-white">รายละเอียดเพิ่มเติม</h3>
-                                <p class="mt-2 text-gray-300">${student.details}</p>
+                                <div><h3 class="font-semibold text-white mb-2">ผู้ดูแลกิจกรรม</h3><p class="text-gray-300">${activity.supervisor}</p></div>
                             </div>
                         </div>`;
                 } else {
-                    throw new Error('Student not found');
+                    throw new Error('Activity not found');
                 }
             } catch (error) {
-                console.error("Could not load student profile:", error);
-                document.title = "ไม่พบข้อมูลนักเรียน - ห้องเรียนครูสไปร์ท";
-                profileContainer.innerHTML = `<div class="text-center p-10 bg-slate-800/70 backdrop-blur-sm rounded-lg shadow-md"><h1 class="text-2xl font-bold text-red-500">ไม่พบข้อมูลนักเรียน</h1><p class="text-gray-300 mt-4">กรุณากลับไปที่ <a href="./students-night.html" class="text-teal-400 hover:underline">หน้ารายชื่อนักเรียน</a> และลองอีกครั้ง</p></div>`;
+                console.error("Could not load activity details:", error);
+                document.title = 'ไม่พบกิจกรรม - ห้องเรียนครูสไปร์ท';
+                container.innerHTML = `<div class="text-center p-10 bg-slate-800/70 backdrop-blur-sm rounded-lg shadow-md"><h1 class="text-2xl font-bold text-red-500">ไม่พบข้อมูลกิจกรรม</h1><p class="text-gray-300 mt-4">กรุณากลับไปที่ <a href="./activity-list-night.html" class="text-teal-400 hover:underline">หน้าตารางกิจกรรม</a> และลองอีกครั้ง</p></div>`;
             }
         }
-        document.addEventListener('DOMContentLoaded', loadStudentProfile);
+        document.addEventListener('DOMContentLoaded', loadActivityDetails);
     </script>
 </body>
 </html>
